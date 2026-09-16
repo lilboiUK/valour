@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Valour.Engine/Valour.Engine.csproj" />
+  <Project Path="Valour.Game/Valour.Game.csproj" />
+</Solution>
