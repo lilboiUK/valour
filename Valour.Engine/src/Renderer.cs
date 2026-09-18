@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
+using System.Numerics;
 
 namespace Valour.Engine;
 
@@ -8,6 +9,7 @@ public class Renderer : IDisposable
 {
     private readonly IView _view;
     private readonly GL _gl;
+    public float AspectRatio { get; private set; }
 
     internal Renderer(IView view)
     {
@@ -32,6 +34,7 @@ public class Renderer : IDisposable
     private void OnFramebufferResize(Vector2D<int> size)
     {
         _gl.Viewport(size);
+        AspectRatio = size.Y == 0 ? 1.0f : (float)size.X / size.Y;
     }
 
     public void Dispose()
@@ -40,11 +43,15 @@ public class Renderer : IDisposable
         _gl.Dispose();
     }
 
-    public unsafe void Draw(Mesh mesh, Shader shader)
+    public unsafe void Draw(Mesh mesh, Shader shader, Camera _camera)
     {
         shader.Use();
-        mesh.Use();
-        _gl.DrawElements(PrimitiveType.Triangles, (uint)mesh.IndicesCount, DrawElementsType.UnsignedInt, (void*)0);
+        mesh.Bind();
+
+        shader.SetUniformMatrix4("uView", _camera.GetViewMatrix());
+        shader.SetUniformMatrix4("uProjection", _camera.GetProjectionMatrix(AspectRatio));
+
+        _gl.DrawElements(PrimitiveType.Triangles, mesh.VertexArray.IndexCount, mesh.VertexArray.IndexType, (void*)0);
     }
 
     // Factory methods

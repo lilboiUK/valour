@@ -1,4 +1,5 @@
-﻿using Silk.NET.Maths;
+﻿using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace Valour.Engine;
@@ -7,6 +8,7 @@ public class ValourEngine : IDisposable
 {
     private readonly IWindow _window;
     private Renderer _renderer = null!;
+    private IInputContext _input = null!;
     private IGame _game = null!;
 
     public ValourEngine(string title, int width, int height, bool fullscreen, bool vsync)
@@ -35,12 +37,13 @@ public class ValourEngine : IDisposable
     private void OnLoad()
     {
         _renderer = new Renderer(_window);
+        _input = _window.CreateInput();
         _game.Load(_renderer);
     }
 
     private void OnUpdate(double deltaTime)
     {
-        _game.Update(deltaTime);
+        _game.Update(deltaTime, _input);
     }
 
     private void OnRender(double deltaTime)

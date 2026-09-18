@@ -9,7 +9,7 @@ internal class VertexArray : IDisposable
     private readonly GL _gl;
 
     public uint Handle { get; private set; }
-    public int IndexCount { get; private set; }
+    public uint IndexCount { get; private set; }
     public DrawElementsType IndexType { get; private set; } = DrawElementsType.UnsignedInt;
 
     public VertexArray(GL gl)

@@ -6,7 +6,7 @@ internal class Program
 {
     private static void Main()
     {
-        using ValourEngine valourEngine = new ValourEngine("ValourGame", 800, 800, false, true);
+        using ValourEngine valourEngine = new ValourEngine("ValourGame", 1200, 1200, false, true);
         valourEngine.Run(new ValourGame());
     }
 }

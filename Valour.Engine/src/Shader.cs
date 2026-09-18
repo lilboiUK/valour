@@ -1,4 +1,6 @@
 ﻿using Silk.NET.OpenGL;
+using System.Numerics;
+using System.Reflection;
 
 namespace Valour.Engine;
 
@@ -61,6 +63,16 @@ public sealed class Shader : IDisposable
             throw new InvalidOperationException($"{type} failed to compile:\n{log}");
         }
         return shader;
+    }
+
+    internal void SetUniformMatrix4(string uniformName, Matrix4x4 matrix)
+    {
+        int location = _gl.GetUniformLocation(_handle, uniformName);
+
+        unsafe
+        {
+            _gl.ProgramUniformMatrix4(_handle, location, 1, false, (float*)&matrix);
+        }
     }
 
     public void Dispose()
