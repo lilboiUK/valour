@@ -75,6 +75,17 @@ public sealed class Shader : IDisposable
         }
     }
 
+    internal void SetUniform4(string uniformName, Vector4 data)
+    {
+        int location = _gl.GetUniformLocation(_handle, uniformName);
+
+        unsafe
+        {
+            _gl.ProgramUniform4(_handle, location, 1, (float*)&data);
+        }
+    }
+
+
     public void Dispose()
     {
         if (!_disposed)

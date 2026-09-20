@@ -21,7 +21,6 @@ public class ValourEngine : IDisposable
         options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible, new APIVersion(4, 5));
 
         _window = Window.Create(options);
-
         _window.Load += OnLoad;
         _window.Update += OnUpdate;
         _window.Render += OnRender;
@@ -39,6 +38,7 @@ public class ValourEngine : IDisposable
         _renderer = new Renderer(_window);
         _input = _window.CreateInput();
         _game.Load(_renderer);
+        _window.Center();
     }
 
     private void OnUpdate(double deltaTime)
