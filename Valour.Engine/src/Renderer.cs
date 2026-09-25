@@ -1,5 +1,4 @@
-﻿using Silk.NET.Maths;
-using Silk.NET.OpenGL;
+﻿using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System.Numerics;
 
@@ -7,30 +6,26 @@ namespace Valour.Engine;
 
 public class Renderer : IDisposable
 {
-    private readonly IView _view;
     private readonly GL _gl;
     private readonly Shader _spriteShader;
     private readonly Mesh _spriteMesh;
     private readonly Vector2 _uiReferenceResolution = new Vector2(1920, 1080);
-    private Matrix4x4 _uiProjectionMatrix;
+
+    private Vector2 _currentResolution;
+    private float _aspectRatio;
     private float _uiScaleFactor;
-
-
-    public float AspectRatio { get; private set; }
+    private Matrix4x4 _uiProjectionMatrix;
 
     internal Renderer(IView view)
     {
-        _view = view;
         _gl = GL.GetApi(view);
 
-        OnFramebufferResize(view.FramebufferSize);
-        _view.FramebufferResize += OnFramebufferResize;
+        Resize((Vector2)view.FramebufferSize);
 
         _spriteShader = CreateSpriteShader();
         _spriteMesh = CreateSpriteMesh();
 
         _gl.Enable(EnableCap.Blend);
-
         _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
     }
 
@@ -40,18 +35,14 @@ public class Renderer : IDisposable
         _gl.Clear(ClearBufferMask.ColorBufferBit);
     }
 
-    internal void EndFrame()
+    internal void EndFrame() { }
+
+    internal void Resize(Vector2 size)
     {
-
-    }
-
-    private void OnFramebufferResize(Vector2D<int> size)
-    {
-        _gl.Viewport(size);
-        AspectRatio = size.Y == 0 ? 1.0f : (float)size.X / size.Y;
-
+        _gl.Viewport(0, 0, (uint)size.X, (uint)size.Y);
+        _currentResolution = size;
+        _aspectRatio = size.Y == 0 ? 1.0f : size.X / size.Y;
         _uiProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0.0f, size.X, size.Y, 0.0f, -1.0f, 1.0f);
-
         _uiScaleFactor = size.Y == 0 ? 1.0f : size.Y / _uiReferenceResolution.Y;
     }
 
@@ -59,10 +50,8 @@ public class Renderer : IDisposable
     {
         string vertPath = Path.Combine(AppContext.BaseDirectory, "resources/shaders/sprite_shader.vert");
         string fragPath = Path.Combine(AppContext.BaseDirectory, "resources/shaders/sprite_shader.frag");
-
         string vertSource = File.ReadAllText(vertPath);
         string fragSource = File.ReadAllText(fragPath);
-
         return CreateShader(vertSource, fragSource);
     }
 
@@ -76,20 +65,12 @@ public class Renderer : IDisposable
             new(new( 0.5f,  0.5f), new(1.0f, 1.0f)), // top-right
         ];
 
-        uint[] indices =
-        [
-            0, 1, 3,
-            0, 3, 2
-        ];
+        uint[] indices = [0, 1, 3, 0, 3, 2];
 
         return CreateMesh(vertices, indices);
     }
 
-    public void Dispose()
-    {
-        _view.FramebufferResize -= OnFramebufferResize;
-        _gl.Dispose();
-    }
+    public void Dispose() => _gl.Dispose();
 
     public unsafe void DrawSprite(Vector2 position, Vector2 size, Camera camera)
     {
@@ -98,11 +79,9 @@ public class Renderer : IDisposable
 
         Matrix4x4 model = Matrix4x4.CreateScale(new Vector3(size, 1.0f)) * Matrix4x4.CreateTranslation(new Vector3(position, 0.0f));
         Matrix4x4 view = camera.GetViewMatrix();
-        Matrix4x4 projection = camera.GetProjectionMatrix(AspectRatio);
+        Matrix4x4 projection = camera.GetProjectionMatrix(_aspectRatio);
 
-        Matrix4x4 mvp = model * view * projection;
-
-        _spriteShader.SetUniformMatrix4("uMVP", mvp);
+        _spriteShader.SetUniformMatrix4("uMVP", model * view * projection);
 
         _gl.DrawElements(PrimitiveType.Triangles, _spriteMesh.VertexArray.IndexCount, _spriteMesh.VertexArray.IndexType, (void*)0);
     }
@@ -114,7 +93,7 @@ public class Renderer : IDisposable
 
         Vector2 sizeScaled = size * _uiScaleFactor;
 
-        Vector2 origin = (anchor * (Vector2)_view.FramebufferSize + offset * _uiScaleFactor) + (pivot * sizeScaled);
+        Vector2 origin = (anchor * _currentResolution) + (offset * _uiScaleFactor) + (pivot * sizeScaled);
 
         Matrix4x4 model = Matrix4x4.CreateScale(sizeScaled.X, sizeScaled.Y, 1.0f) * Matrix4x4.CreateTranslation(origin.X, origin.Y, 0.0f);
 

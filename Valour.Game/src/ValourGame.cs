@@ -8,7 +8,7 @@ internal class ValourGame : IGame
 {
     private Camera _camera;
     private float _cameraMoveSpeed = 2.0f;
-    private float _cameraZoomSpeed = 5f;
+    private float _cameraZoomSpeed = 50f;
 
     public Vector2 BoxOffset = new Vector2(0, 0);
     public Vector2 BoxSize = new Vector2(100, 100);
@@ -27,7 +27,7 @@ internal class ValourGame : IGame
         if (input.Keyboards[0].IsKeyPressed(Key.W)) inputY = 1;  // Up
         if (input.Keyboards[0].IsKeyPressed(Key.S)) inputY -= 1; // Down
         if (input.Keyboards[0].IsKeyPressed(Key.D)) inputX = 1;  // Right
-        if (input.Keyboards[0].IsKeyPressed(Key.A)) inputX = -1;  // Left
+        if (input.Keyboards[0].IsKeyPressed(Key.A)) inputX = -1; // Left
 
         Vector2 moveVelocity = new Vector2(inputX, inputY) * _cameraMoveSpeed * (float)deltaTime;
 

@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using System.Numerics;
 
 namespace Valour.Engine;
 
@@ -24,6 +25,7 @@ public class ValourEngine : IDisposable
         _window.Load += OnLoad;
         _window.Update += OnUpdate;
         _window.Render += OnRender;
+        _window.FramebufferResize += OnFramebuferResize;
         _window.Closing += OnClose;
     }
 
@@ -51,6 +53,11 @@ public class ValourEngine : IDisposable
         _renderer.BeginFrame();
         _game.Render(_renderer);
         _renderer.EndFrame();
+    }
+
+    private void OnFramebuferResize(Vector2D<int> size)
+    {
+        _renderer.Resize((Vector2)size);
     }
 
     private void OnClose()
